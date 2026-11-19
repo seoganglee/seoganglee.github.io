@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% if page.title %}{{ page.title }} · {% endif %}{{ site.title }}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="{{ '/' | relative_url }}">Seogang Lee <span>EQUITY RESEARCH</span></a>
+    <nav aria-label="섹션">
+      <a href="{{ '/#about' | relative_url }}">소개</a>
+      <a href="{{ '/market/' | relative_url }}">시황 노트</a>
+      <a href="{{ '/macro/' | relative_url }}">경제지표</a>
+      <a href="{{ '/#track' | relative_url }}">운용 기록</a>
+      <a href="{{ '/#research' | relative_url }}">리서치</a>
+      <a href="{{ '/#contact' | relative_url }}">연락처</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap" id="top">
+{{ content }}
+
+  <footer id="contact">
+    <strong style="color:var(--ink)">연락처</strong>
+    <div class="contact">
+      <span>Email <a class="mono" href="mailto:lsg985@naver.com">lsg985@naver.com</a></span>
+      <span>GitHub <a class="mono" href="https://github.com/seoganglee">github.com/seoganglee</a></span>
+    </div>
+    <p style="margin-top:24px;font-size:12px">이 페이지의 시황·운용 기록은 개인 학습 목적의 정리이며 투자 권유가 아닙니다.</p>
+  </footer>
+</main>
+</body>
+</html>

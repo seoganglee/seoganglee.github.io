@@ -1,0 +1,37 @@
+---
+layout: default
+---
+{% assign cat = page.categories | first %}
+<article class="post">
+  <p class="back"><a href="{{ '/' | append: cat | append: '/' | relative_url }}">← {{ site.category_names[cat] | default: cat }} 전체 보기</a></p>
+  <div>
+    {% if page.sample %}<span class="tag sample">작성 예시</span>{% endif %}
+    <span class="tag">{{ site.category_names[cat] | default: cat }}</span>
+    {% if page.region %}<span class="tag">{{ page.region }}</span>{% endif %}
+  </div>
+  <h1>{{ page.title }}</h1>
+  <p class="meta">{{ page.date | date: "%Y-%m-%d" }}</p>
+
+  {% include metrics.html metrics=page.metrics %}
+
+  {% if cat == "macro" and page.actual %}
+  <div class="metrics">
+    <div class="metric"><div class="k">지표</div><div class="v" style="font-size:15px">{{ page.indicator }}</div><div class="d flat">{{ page.country }}</div></div>
+    <div class="metric"><div class="k">예상</div><div class="v">{{ page.forecast }}</div></div>
+    <div class="metric"><div class="k">실제</div><div class="v">{{ page.actual }}</div></div>
+    <div class="metric"><div class="k">이전</div><div class="v">{{ page.prior }}</div></div>
+  </div>
+  {% endif %}
+
+  {% if cat == "trade" and page.stock %}
+  <div class="metrics">
+    <div class="metric"><div class="k">종목</div><div class="v" style="font-size:15px">{{ page.stock }}</div></div>
+    <div class="metric"><div class="k">구분</div><div class="v {% if page.side == '매수' %}up{% else %}down{% endif %}" style="font-size:15px">{{ page.side }}</div></div>
+    <div class="metric"><div class="k">수익률</div><div class="v">{{ page.return | default: "—" }}</div></div>
+  </div>
+  {% endif %}
+
+  <div class="prose">
+    {{ content }}
+  </div>
+</article>

@@ -1,0 +1,22 @@
+---
+layout: default
+---
+{% assign posts = site.categories[page.cat] %}
+<section class="post" style="max-width:none">
+  <p class="back"><a href="{{ '/' | relative_url }}">← 홈으로</a></p>
+  <h1>{{ site.category_names[page.cat] }}</h1>
+  <p class="meta">총 {{ posts | size }}건</p>
+  {% if posts and posts.size > 0 %}
+  <ul class="post-list" style="margin-top:24px">
+    {% for p in posts %}
+    <li>
+      <span class="meta">{{ p.date | date: "%Y-%m-%d" }}</span>
+      <a href="{{ p.url | relative_url }}">{{ p.title }}</a>
+      <span>{% if p.sample %}<span class="tag sample">작성 예시</span>{% endif %}{% if p.region %}<span class="tag">{{ p.region }}</span>{% endif %}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="empty" style="margin-top:24px">아직 작성한 글이 없습니다.</p>
+  {% endif %}
+</section>

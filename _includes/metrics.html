@@ -1,0 +1,10 @@
+{% if include.metrics %}
+<div class="metrics">
+  {% for m in include.metrics %}
+    {% assign d = m.d | append: "" %}
+    {% assign first = d | slice: 0 %}
+    {% if first == "+" %}{% assign cls = "up" %}{% elsif first == "-" or first == "−" %}{% assign cls = "down" %}{% else %}{% assign cls = "flat" %}{% endif %}
+  <div class="metric"><div class="k">{{ m.k }}</div><div class="v">{{ m.v }}</div><div class="d {{ cls }}">{{ m.d }}</div></div>
+  {% endfor %}
+</div>
+{% endif %}

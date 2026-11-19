@@ -1,0 +1,23 @@
+title: Seogang Lee
+lang: ko
+timezone: Asia/Seoul
+markdown: kramdown
+kramdown:
+  input: GFM
+permalink: /:categories/:year/:month/:day/:title/
+exclude:
+  - README.md
+  - _templates
+
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: post
+
+# 글 종류(category) 이름 — 홈페이지와 목록 페이지에 표시됨
+category_names:
+  market: 시황 노트
+  macro: 경제지표
+  trade: 매매 일지
