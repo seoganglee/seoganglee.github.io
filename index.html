@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Equity Research Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: 증권사 리포트 지면처럼 — 좌측 섹션 라벨 + 우측 본문의 2단 그리드, 숫자는 모노 폰트, 상승=빨강/하락=파랑(한국 시장 관례) */
+:root {
+  --paper: #f6f7f8;
+  --surface: #ffffff;
+  --ink: #15202b;
+  --muted: #5b6774;
+  --rule: #d9dee3;
+  --accent: #0b4f6c;
+  --accent-soft: #e3eef3;
+  --up: #c8102e;
+  --down: #1f5fbf;
+  --font-display: "Noto Serif KR", "Nanum Myeongjo", serif;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f151b; --surface: #161e26; --ink: #e6ebf0; --muted: #98a5b2;
+    --rule: #2a3540; --accent: #6fb8d6; --accent-soft: #1b2e38;
+    --up: #ff6b7d; --down: #6ea8ff; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f151b; --surface: #161e26; --ink: #e6ebf0; --muted: #98a5b2;
+  --rule: #2a3540; --accent: #6fb8d6; --accent-soft: #1b2e38;
+  --up: #ff6b7d; --down: #6ea8ff; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+.num, .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* top bar */
+.topbar {
+  position: sticky; top: 0; z-index: 10;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(8px); border-bottom: 1px solid var(--rule);
+}
+.topbar-inner {
+  max-width: 1120px; margin: 0 auto; padding: 12px 24px;
+  display: flex; gap: 24px; align-items: center; justify-content: space-between; flex-wrap: wrap;
+}
+.brand { font-weight: 700; letter-spacing: -0.01em; text-decoration: none; color: var(--ink); }
+.brand span { color: var(--accent); font-family: var(--font-mono); font-weight: 500; font-size: 13px; margin-left: 8px; }
+nav { display: flex; gap: 4px 18px; flex-wrap: wrap; font-size: 14px; }
+nav a { color: var(--muted); text-decoration: none; }
+nav a:hover { color: var(--ink); }
+
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+/* hero */
+.hero { padding: 64px 0 48px; border-bottom: 2px solid var(--ink); }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 48px; align-items: end; }
+.kicker { font-family: var(--font-mono); font-size: 13px; color: var(--accent); letter-spacing: 0.04em; }
+.hero h1 { font-family: var(--font-display); font-size: clamp(34px, 5vw, 52px); line-height: 1.2; letter-spacing: -0.02em; margin: 12px 0 18px; }
+.hero p.lead { font-size: 18px; color: var(--muted); max-width: 34em; margin: 0; }
+.coverage {
+  border: 1px solid var(--rule); background: var(--surface); padding: 20px 22px;
+  display: grid; gap: 10px; font-size: 14px;
+}
+.coverage dt { color: var(--muted); font-size: 12px; }
+.coverage dd { margin: 0 0 6px; font-weight: 500; }
+
+/* sections */
+section.block { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 40px; padding: 56px 0; border-bottom: 1px solid var(--rule); }
+.label { position: sticky; top: 80px; align-self: start; }
+.label .idx { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.label h2 { font-family: var(--font-display); font-size: 24px; margin-top: 4px; }
+.label p { font-size: 13px; color: var(--muted); margin: 8px 0 0; }
+.body > * + * { margin-top: 24px; }
+.body p { max-width: 65ch; }
+
+.card { background: var(--surface); border: 1px solid var(--rule); padding: 22px 24px; }
+.card h3 { font-size: 18px; }
+.meta { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.tag { display: inline-block; font-size: 12px; padding: 2px 8px; background: var(--accent-soft); color: var(--accent); margin-right: 6px; }
+.tag.sample { background: transparent; border: 1px dashed var(--muted); color: var(--muted); }
+
+/* market notes */
+.note-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 16px 0; }
+.metric { background: var(--surface); padding: 12px 14px; }
+.metric .k { font-size: 12px; color: var(--muted); }
+.metric .v { font-family: var(--font-mono); font-size: 18px; font-variant-numeric: tabular-nums; }
+.metric .d { font-family: var(--font-mono); font-size: 13px; }
+.up { color: var(--up); } .down { color: var(--down); } .flat { color: var(--muted); }
+.note ul { margin: 0; padding-left: 18px; }
+
+/* tables */
+.table-wrap { overflow-x: auto; border: 1px solid var(--rule); background: var(--surface); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 640px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-size: 12px; color: var(--muted); font-weight: 500; background: var(--paper); }
+td.num, th.num { text-align: right; }
+tr:last-child td { border-bottom: 0; }
+
+/* case study */
+.thesis { border-left: 3px solid var(--accent); padding: 4px 0 4px 18px; font-family: var(--font-display); font-size: 20px; line-height: 1.6; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; }
+.stat { border-top: 2px solid var(--ink); padding-top: 10px; }
+.stat .v { font-family: var(--font-mono); font-size: 26px; font-variant-numeric: tabular-nums; }
+.stat .k { font-size: 13px; color: var(--muted); }
+.timeline { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--rule); }
+.timeline li { position: relative; padding: 0 0 22px 24px; }
+.timeline li::before { content: ""; position: absolute; left: -5px; top: 9px; width: 9px; height: 9px; background: var(--surface); border: 2px solid var(--accent); border-radius: 50%; }
+.timeline li.key::before { background: var(--accent); }
+.timeline .when { font-family: var(--font-mono); font-size: 13px; color: var(--accent); }
+.timeline p { margin: 2px 0 0; }
+
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+
+footer { padding: 40px 0 64px; color: var(--muted); font-size: 14px; }
+footer .contact { display: flex; gap: 8px 28px; flex-wrap: wrap; margin-top: 8px; }
+
+@media (max-width: 860px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 28px; }
+  section.block { grid-template-columns: 1fr; gap: 20px; padding: 40px 0; }
+  .label { position: static; }
+}
+@media (max-width: 420px) {
+  .topbar-inner, .wrap { padding-left: 16px; padding-right: 16px; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#top">[이름] <span>EQUITY RESEARCH</span></a>
+    <nav aria-label="섹션">
+      <a href="#about">소개</a>
+      <a href="#market">시황 노트</a>
+      <a href="#macro">경제지표</a>
+      <a href="#track">운용 기록</a>
+      <a href="#research">리서치</a>
+      <a href="#contact">연락처</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap" id="top">
+
+  <div class="hero">
+    <div class="hero-grid">
+      <div>
+        <div class="kicker">RESEARCH PORTFOLIO · 2026</div>
+        <h1>숫자로 시장을 읽고,<br>근거로 판단합니다</h1>
+        <p class="lead">매일의 시황 정리, 경제지표 추적, 실전 운용 기록을 한곳에 모았습니다. 거시 흐름과 기업 펀더멘털을 함께 보는 애널리스트를 목표로 합니다.</p>
+      </div>
+      <dl class="coverage">
+        <div><dt>소속</dt><dd>서강대학교 경제학</dd></div>
+        <div><dt>관심 커버리지</dt><dd>반도체 · 자동차(PBV) · 매크로/금리</dd></div>
+        <div><dt>준비 중</dt><dd>FRM(재무위험관리사)</dd></div>
+        <div><dt>실전 운용</dt><dd>제12회 DB GAPS 투자대회 팀장 · 상위 30팀 PT 진출</dd></div>
+      </dl>
+    </div>
+  </div>
+
+  <!-- 01 소개 -->
+  <section class="block" id="about">
+    <div class="label"><div class="idx">01</div><h2>소개</h2><p>Who I am</p></div>
+    <div class="body">
+      <p>경제학을 공부하며 거시경제 모형과 실제 시장이 어떻게 맞물리는지에 관심을 가져왔습니다. 석사논문에서는 글로벌 반도체 수요 충격이 이익 기반 차입제약을 통해 한국 반도체 기업의 투자 변동을 증폭시키는지를 DSGE 모형으로 분석하고 있습니다.</p>
+      <p>시장에서는 이 관점을 그대로 가져옵니다. 매일 한국·미국 증시를 정리하고, 금리와 환율, 수급을 함께 기록하며, 투자 판단은 밸류에이션 근거와 함께 남깁니다.</p>
+      <div class="grid2">
+        <div class="card">
+          <h3>투자 철학</h3>
+          <p class="meta" style="margin-top:4px">KEYNES · BEAUTY CONTEST</p>
+          <p style="margin-top:10px">주식 시장은 미인대회와 같다고 봅니다. 내가 좋아하는 종목보다 시장 참여자들이 좋아하게 될 종목을 먼저 찾고, 그 기대가 밸류에이션으로 정당화되는지를 확인합니다.</p>
+        </div>
+        <div class="card">
+          <h3>분석 도구</h3>
+          <p class="meta" style="margin-top:4px">TOOLKIT</p>
+          <p style="margin-top:10px">Dynare/MATLAB(DSGE, 베이지안 추정), 시계열계량(ARMA, 단위근, SVAR·Local Projection), DART·SEC 재무데이터 분석, 캔들·수급 차트 기반 일일 리포트 작성</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 시황 노트 -->
+  <section class="block" id="market">
+    <div class="label"><div class="idx">02</div><h2>시황 노트</h2><p>Daily market notes<br>금리 · 환율 · 지수 · 이벤트</p></div>
+    <div class="body" id="notes"></div>
+  </section>
+
+  <!-- 03 경제지표 -->
+  <section class="block" id="macro">
+    <div class="label"><div class="idx">03</div><h2>경제지표</h2><p>Macro calendar<br>예상치 대비 실제치와 해석</p></div>
+    <div class="body">
+      <p>주요 지표는 발표 직후 컨센서스와의 차이, 그리고 금리·환율 반응을 함께 기록합니다.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>발표일</th><th>국가</th><th>지표</th><th class="num">예상</th><th class="num">실제</th><th class="num">이전</th><th>해석</th></tr></thead>
+          <tbody id="macro-rows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 운용 기록 -->
+  <section class="block" id="track">
+    <div class="label"><div class="idx">04</div><h2>운용 기록</h2><p>Track record<br>판단 근거와 결과</p></div>
+    <div class="body">
+      <div class="card">
+        <div class="note-head">
+          <h3>제12회 DB GAPS 투자대회</h3>
+          <span class="meta">2026.06 – 2026.08 · 팀장</span>
+        </div>
+        <p style="margin-top:10px">대회 기간 코스피가 8,400선에서 6,600선 부근까지 밀린 하락장이었습니다. 초반 최하위권에서 출발해 한 자리 등수까지 올라섰고, 상위 30팀에 들어 PT 평가에 진출했습니다.</p>
+        <div class="stats" style="margin-top:20px">
+          <div class="stat"><div class="v num">≈ −20%</div><div class="k">7/23 이후 4거래일 코스피 낙폭 (7,096 → 5,663)</div></div>
+          <div class="stat"><div class="v num up">+17%</div><div class="k">7/31 코스피 반등 폭 (이상)</div></div>
+          <div class="stat"><div class="v num">한 자리</div><div class="k">최종 등수권 · 수익 마감</div></div>
+          <div class="stat"><div class="v num">Top 30</div><div class="k">PT 평가 진출</div></div>
+        </div>
+      </div>
+
+      <p class="thesis">"손절이냐, 비중 확대냐." 팀원들이 손절매를 주장한 날, 삼성전자의 PBR 하단과 2027년 BPS 추정치를 근거로 남은 매수 여력을 모두 반도체에 투입했습니다.</p>
+
+      <ol class="timeline">
+        <li><div class="when">6월 · 초반</div><p>코스닥·전력 관련 ETF 비중이 컸고, 하락장에서 최하위권까지 밀림.</p></li>
+        <li><div class="when">7월 · 중반</div><p>반도체 관련 ETF로 손실을 만회하며 입상권 진입. 팀 내에서 순위 방어(비중 축소)와 격차 확대(비중 확대) 의견이 갈렸고, 팀장으로서 비중 확대를 결정.</p></li>
+        <li class="key"><div class="when">7월 23일</div><p>외국인 순매수 전환과 지수 상승을 유동성 개선 신호로 판단해 국내주식 비중 확대.</p></li>
+        <li class="key"><div class="when">7월 28일</div><p>4거래일 연속 하락(약 20%)으로 팀원들이 손절매 주장. 삼성전자가 과거 PBR 1배를 지켜온 이력과 증권사 2027년 BPS 추정치로 볼 때 21만원 수준은 비싸지 않다고 판단, 남은 매수 여력을 반도체 ETF와 필라델피아 반도체지수 상품에 투입.</p></li>
+        <li class="key"><div class="when">7월 31일</div><p>코스피가 하루 17% 이상 반등하며 수익 전환, 한 자리 등수 진입.</p></li>
+        <li><div class="when">8월 · 이후</div><p>수익으로 대회 마감, 상위 30팀 PT(투자철학·운용결과 분석) 진출.</p></li>
+      </ol>
+
+      <div>
+        <h3 style="font-size:18px">개인 매매 일지</h3>
+        <p style="margin:6px 0 14px;color:var(--muted);font-size:14px">매수·매도 시점의 근거를 먼저 적고, 결과는 나중에 채웁니다.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>날짜</th><th>종목</th><th>구분</th><th>투자 근거</th><th class="num">수익률</th><th>복기</th></tr></thead>
+            <tbody id="trade-rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 리서치 -->
+  <section class="block" id="research">
+    <div class="label"><div class="idx">05</div><h2>리서치</h2><p>Reports &amp; papers</p></div>
+    <div class="body">
+      <div class="grid2">
+        <article class="card">
+          <span class="tag">기업분석</span>
+          <h3 style="margin-top:10px">기아: PBV가 여는 다음 성장 구간</h3>
+          <p style="margin-top:10px">PBV(목적 기반 차량)의 사업 구조를 설명하고, LMR 배터리 채택에 따른 원가 절감 효과, 판교 원격 운전 카셰어링을 통한 PBV 로드맵 구체화를 다룬 리포트.</p>
+          <p class="meta">PBV → LMR 원가 → 판교 카셰어링 로드맵</p>
+        </article>
+        <article class="card">
+          <span class="tag">석사논문</span>
+          <h3 style="margin-top:10px">글로벌 반도체 수요 충격과 이익 기반 차입제약</h3>
+          <p style="margin-top:10px">소규모 개방경제에서 반도체 수요 충격 이후 이익(earnings) 기반 차입이 투자 변동을 증폭시키는지 분석. Drechsel(2023)을 확장한 DSGE에 간헐적 구속 제약과 금리 충격을 도입하고, 담보 기반·이자보상(ICR) 제약과 비교.</p>
+          <p class="meta">삼성전자 · SK하이닉스 CAPEX · DRAM/NAND 가격 · 반도체 수출</p>
+        </article>
+        <article class="card">
+          <span class="tag">일일 리포트</span>
+          <h3 style="margin-top:10px">오늘의 한국·미국 증시</h3>
+          <p style="margin-top:10px">한국: 코스피·코스닥 1년 캔들, 개인·기관·외국인 누적 순매수, 한·미·일 10년물 금리. 미국: S&amp;P500·나스닥·10년물 금리 캔들. 같은 양식으로 매일 작성.</p>
+          <p class="meta">PDF · 캔들 · 수급 · 금리</p>
+        </article>
+        <article class="card">
+          <span class="tag">자격증</span>
+          <h3 style="margin-top:10px">FRM 준비</h3>
+          <p style="margin-top:10px">시장·신용·운영 리스크와 가치평가 모형을 학습 중. 개념 정리와 플래시카드로 복습합니다.</p>
+          <p class="meta">Financial Risk Manager · GARP</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer id="contact">
+    <strong style="color:var(--ink)">연락처</strong>
+    <div class="contact">
+      <span>Email <span class="mono">[your@email.com]</span></span>
+      <span>LinkedIn <span class="mono">[linkedin.com/in/…]</span></span>
+      <span>GitHub <span class="mono">[github.com/…]</span></span>
+    </div>
+    <p style="margin-top:24px;font-size:12px">이 페이지의 시황·운용 기록은 개인 학습 목적의 정리이며 투자 권유가 아닙니다.</p>
+  </footer>
+</main>
+
+<script>
+/* ===== 여기만 수정하면 페이지가 갱신됩니다 =====
+   새 항목은 배열 맨 앞에 추가하세요. sample: true 인 항목은 '작성 예시' 표시가 붙습니다. */
+
+const MARKET_NOTES = [
+  {
+    sample: true,
+    date: "2026-11-18",
+    title: "[추천 제목] 예: 국채 입찰 부진에 금리 상승, 기술주 차익 실현",
+    region: "미국",
+    metrics: [
+      { k: "S&P500",       v: "0,000.00", d: "+0.00%" },
+      { k: "나스닥",        v: "00,000.00", d: "−0.00%" },
+      { k: "미 10년물",     v: "0.00%",    d: "+0bp" },
+      { k: "미 2년물",      v: "0.00%",    d: "−0bp" },
+      { k: "기준금리",      v: "0.00%",    d: "동결" },
+      { k: "원/달러",       v: "0,000.0",  d: "+0.0" }
+    ],
+    events: [
+      "국채 입찰: 10년물 입찰 결과(응찰률·테일)와 금리 반응",
+      "경제지표: 발표치 vs 예상치, 시장 해석",
+      "주요 뉴스: 업종·종목 이슈 한 줄 요약"
+    ]
+  }
+];
+
+const MACRO = [
+  { sample: true, date: "2026-11-xx", country: "미국", name: "CPI (전년비)", est: "0.0%", act: "0.0%", prev: "0.0%", note: "예상 상회 시 10년물·달러 반응 기록" },
+  { sample: true, date: "2026-11-xx", country: "미국", name: "비농업 고용", est: "000K", act: "000K", prev: "000K", note: "실업률·임금상승률 함께 확인" },
+  { sample: true, date: "2026-11-xx", country: "한국", name: "수출 (반도체)", est: "—", act: "0.0%", prev: "0.0%", note: "메모리 가격 흐름과 비교" }
+];
+
+const TRADES = [
+  { sample: true, date: "2026-11-xx", name: "[종목명]", side: "매수", thesis: "밸류에이션 근거(PBR·PER 밴드, 추정 BPS/EPS)와 수급 근거", ret: "", review: "결과가 나온 뒤 판단의 맞고 틀린 점을 기록" }
+];
+
+/* ===== 렌더링 ===== */
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const dirClass = d => /^\+/.test(d) ? "up" : /^[−-]/.test(d) ? "down" : "flat";
+const sampleTag = x => x.sample ? '<span class="tag sample">작성 예시</span>' : "";
+
+document.getElementById("notes").innerHTML = MARKET_NOTES.map(n => `
+  <article class="card note">
+    <div class="note-head">
+      <div>${sampleTag(n)}<span class="tag">${esc(n.region)}</span></div>
+      <span class="meta">${esc(n.date)}</span>
+    </div>
+    <h3 style="margin-top:10px">${esc(n.title)}</h3>
+    <div class="metrics">
+      ${n.metrics.map(m => `<div class="metric"><div class="k">${esc(m.k)}</div><div class="v">${esc(m.v)}</div><div class="d ${dirClass(m.d)}">${esc(m.d)}</div></div>`).join("")}
+    </div>
+    <ul>${n.events.map(e => `<li>${esc(e)}</li>`).join("")}</ul>
+  </article>`).join("");
+
+document.getElementById("macro-rows").innerHTML = MACRO.map(r => `
+  <tr><td class="mono">${esc(r.date)} ${sampleTag(r)}</td><td>${esc(r.country)}</td><td>${esc(r.name)}</td>
+  <td class="num">${esc(r.est)}</td><td class="num">${esc(r.act)}</td><td class="num">${esc(r.prev)}</td><td>${esc(r.note)}</td></tr>`).join("");
+
+document.getElementById("trade-rows").innerHTML = TRADES.map(t => `
+  <tr><td class="mono">${esc(t.date)} ${sampleTag(t)}</td><td>${esc(t.name)}</td>
+  <td class="${t.side === "매수" ? "up" : "down"}">${esc(t.side)}</td><td>${esc(t.thesis)}</td>
+  <td class="num ${dirClass(t.ret)}">${esc(t.ret || "—")}</td><td>${esc(t.review)}</td></tr>`).join("");
+</script>
+</body>
+</html>
